@@ -1,17 +1,17 @@
-# flutter_application_1
+# 🛡️ Vautify
 
-A new Flutter project.
+Vautify is a modern, privacy-first password manager designed to keep your digital credentials secure on your own device. Built with Flutter, it combines military-grade AES-256 encryption with a highly polished, premium user interface. 
 
-## Getting Started
+Unlike cloud-based alternatives, Vautify utilizes a zero-knowledge local architecture. Your data never leaves your device, and there are no subscription fees—just your passwords, locked safely behind your Master Password and layered security protocols.
 
-This project is a starting point for a Flutter application.
+### ✨ Key Features
+* **AES-256 Encryption:** All vault entries (passwords, PINs, and challenge answers) are heavily encrypted before being saved to the local database.
+* **Multi-Layered Security:** Protect your vault with a global Master Password, plus optional entry-specific PINs and custom Challenge Questions.
+* **Zero-Knowledge Architecture:** 100% offline local storage using `flutter_secure_storage`. No servers, no tracking, no breaches.
+* **Premium UI/UX:** Features a sleek dark-mode interface with ambient gradients, customized native page transitions (Android Zoom & iOS Slide), and buttery-smooth Hero animations.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 🛠️ Tech Stack
+* **Framework:** Flutter / Dart
+* **Security:** `encrypt`, `crypto`
+* **Storage:** `flutter_secure_storage`
+* **Authentication:** `local_auth` 
