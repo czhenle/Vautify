@@ -4,6 +4,10 @@ import '../models/password_entry.dart';
 import '../services/storage_service.dart';
 import '../services/encryption_service.dart';
 
+/// Password Form Screen acts as a dual-purpose screen.
+/// If 'existingEntry' is passed in, it acts as an "Edit" screen
+/// If 'existingEntry' is null, it acts as an "Add New" screen
+
 class PasswordFormScreen extends StatefulWidget {
   final PasswordEntry? existingEntry;
   const PasswordFormScreen({super.key, this.existingEntry});
@@ -16,29 +20,35 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
   final StorageService _storageService = StorageService();
   final EncryptionService _encryptionService = EncryptionService();
 
+  // Static Text Controllers for the main form fields
   final TextEditingController _siteController = TextEditingController();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
 
+  // Dynamic list to hold controllers for however many challenge questions the user adds
   final List<Map<String, TextEditingController>> _challengeControllers = [];
 
+  // State flags to determine if the user has successfully entered their master password
   bool _isPasswordUnlocked = false;
   bool _isPinUnlocked = false;
 
   @override
   void initState() {
     super.initState();
+    // INITIALIZATION LOGIC: If we are editing an existing entry, populate the fields.
     if (widget.existingEntry != null) {
       _siteController.text = widget.existingEntry!.siteName;
       _userController.text = widget.existingEntry!.username;
 
+      // Mask the sensitive data initially until the user unlocks it
       _passController.text = '********';
       _pinController.text = widget.existingEntry!.pin != null ? '********' : '';
       
       _isPasswordUnlocked = false;
       _isPinUnlocked = false;
 
+      // Dynamically generate controllers for existing challenge questions
       for (var challenge in widget.existingEntry!.challenges) {
         _challengeControllers.add({
           'question': TextEditingController(text: challenge['question']),
@@ -46,11 +56,30 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
         });
       }
     } else {
+      // If adding a new entry, fields start unlocked so the user can type
       _isPasswordUnlocked = true;
       _isPinUnlocked = true;
     }
   }
 
+  //=== MEMORY MANAGEMENT ===
+  @override
+  void dispose() {
+    // Dispose of all static controllers
+    _siteController.dispose();
+    _userController.dispose();
+    _passController.dispose();
+    _pinController.dispose();
+
+    // Loop through and dispose of all dynamically created challenge controllers
+    for (var controllers in _challengeControllers) {
+      controllers['question']?.dispose();
+      controllers['answer']?.dispose();
+    }
+    super.dispose();
+  }
+  
+  // === DYNAMIC UI LOGIC ===
   void _addChallengeField() {
     setState(() {
       _challengeControllers.add({
@@ -62,12 +91,14 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
 
   void _removeChallengeField(int index) {
     setState(() {
+      // Must dispose of the specific controllers before removing them from the list
       _challengeControllers[index]['question']?.dispose();
       _challengeControllers[index]['answer']?.dispose();
       _challengeControllers.removeAt(index);
     });
   }
 
+  // === SECURITY DIALOG LOGIC ===
   Future<void> _showUnlockDialog({required bool isPinField}) async {
     final TextEditingController masterPassController = TextEditingController();
     String errorMessage = '';
@@ -140,6 +171,7 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
     );
   }
 
+  // === SAVE / UPDATE LOGIC ===
   Future<void> _saveForm() async {
     if (_formKey.currentState!.validate()) {
       Map<String, String?> account = await _storageService.getMasterAccount();
@@ -409,14 +441,5 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    for (var controllers in _challengeControllers) {
-      controllers['question']?.dispose();
-      controllers['answer']?.dispose();
-    }
-    super.dispose();
   }
 }

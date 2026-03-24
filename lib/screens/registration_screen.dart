@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
 import 'auth_screen.dart';
 
+/// Registration Screen allows new users to create their account.
+
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 
@@ -10,6 +12,7 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
+  // Controllers to read the text input from the user in real-time
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
@@ -17,23 +20,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final StorageService _storageService = StorageService();
   String _errorMessage = '';
 
+  // === MEMORY MANAGEMENT ===
+  @override
+  void dispose() {
+    // Always dispose of TextEditingControllers when the widget is removed from the widget tree.
+    // This prevents memory leaks and keeps the app running smoothly.
+    _userController.dispose();
+    _passController.dispose();
+    _confirmPassController.dispose();
+    super.dispose();
+  }
+  
+  // === REGISTRATION LOGIC & VALIDATION ===
   Future<void> _registerAccount() async {
     String user = _userController.text;
     String pass = _passController.text;
     String confirmPass = _confirmPassController.text;
 
+    // 1. Basic Validation: Check for empty fields
     if (user.isEmpty || pass.isEmpty || confirmPass.isEmpty) {
       setState(() { _errorMessage = 'All fields are required to register.'; });
       return;
     }
-
+    // 2. Security Validation: Ensure passwords match
     if (pass != confirmPass) {
       setState(() { _errorMessage = 'Passwords do not match!'; });
       return;
     }
-
+    // 3. Database Operation: Await the storage service to securely save the credentials
     await _storageService.registerAccount(user, pass);
-
+    // 4. Navigation: Ensure the widget is still on screen before navigating
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const AuthScreen()),
@@ -45,7 +61,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      extendBodyBehindAppBar: true, 
+      extendBodyBehindAppBar: true, // Allows the background gradient to flow under the app bar
       appBar: AppBar(
         backgroundColor: Colors.transparent, 
         foregroundColor: Colors.white, 
@@ -76,6 +92,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+
+                  // --- SHIELD GRAPHIC ---
                   SizedBox(
                     height: 160,
                     child: Stack(
@@ -112,6 +130,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   const Text('Set up your master credentials.', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.white70)),
                   const SizedBox(height: 30),
                   
+                  // --- FORM INPUTS ---
                   TextField(
                     controller: _userController,
                     style: const TextStyle(color: Colors.white),
@@ -127,7 +146,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   
                   TextField(
                     controller: _passController,
-                    obscureText: true,
+                    obscureText: true, // Masks the password input for security
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -152,6 +171,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                   ),
 
+                  // --- CONDITIONAL ERROR DISPLAY ---
+                  // Only renders this block if there is actually an error to show
                   if (_errorMessage.isNotEmpty) ...[
                     const SizedBox(height: 15),
                     Text(_errorMessage, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.redAccent, fontWeight: FontWeight.bold)),
@@ -159,6 +180,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                   const SizedBox(height: 30),
                   
+                  // --- SUBMIT BUTTON ---
                   ElevatedButton(
                     onPressed: _registerAccount,
                     style: ElevatedButton.styleFrom(

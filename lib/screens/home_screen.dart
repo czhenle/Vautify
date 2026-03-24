@@ -4,6 +4,8 @@ import '../services/storage_service.dart';
 import 'password_form_screen.dart';
 import 'user_profile.dart';
 
+/// Home Screen consists of different function like list of passwords, search query, and selecting.
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -12,24 +14,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Service to handle our local database operations
   final StorageService _storageService = StorageService();
-  List<PasswordEntry> _passwords = [];
-  bool _isLoading = true;
 
-  int _currentTab = 0;
-  
+  // State Variables: Changing any of these inside a setState() will rebuild the UI.
+  List<PasswordEntry> _passwords = [];
+  bool _isLoading = true; // Shows a loading spinner while reading from storage
+  int _currentTab = 0; // Tracks if we are on the Home (0) or Profile (1) tab
   bool _isSearching = false;
   String _searchQuery = '';
-  
   bool _isSelecting = false;
-  final Set<String> _selectedIds = {};
+  final Set<String> _selectedIds = {}; // 'final' because the Set object itself never changes, only its contents
 
   @override
   void initState() {
     super.initState();
+    // Fetch passwords from the encrypted storage as soon as the screen loads
     _loadPasswords();
   }
 
+  // Asynchronous method to load data without freezing the app UI
   Future<void> _loadPasswords() async {
     final passwords = await _storageService.getPasswords();
     setState(() {
@@ -63,9 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
 
     return Scaffold(
-      // 1. Replaced pure black with a rich, deep midnight/charcoal color
       backgroundColor: const Color(0xFF090D10),
       extendBodyBehindAppBar: true,
+
+      // Dynamic AppBar: Only show it if we are on the Home tab
       appBar: _currentTab == 0
           ? AppBar(
               backgroundColor: Colors.transparent,
@@ -79,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               actions: [
+                // Conditional UI: Only show the delete button if items are actually selected
                 if (_isSelecting && _selectedIds.isNotEmpty)
                   IconButton(
                     icon: const Icon(Icons.delete_sweep, color: Colors.redAccent),
@@ -98,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       body: Stack(
         children: [
-          // === LAYER 1: NEW AMBIENT DUAL-GLOW BACKGROUND ===
+          // === LAYER 1: AMBIENT DUAL-GLOW BACKGROUND ===
           Positioned(
             top: -150, left: -100,
             child: Container(
@@ -125,11 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // === LAYER 1.5: THE SHIELD WATERMARK ===
-          // We wrap your graphic in an Opacity widget so it doesn't distract from the list
           Align(
             alignment: Alignment.center,
             child: Opacity(
-              opacity: 0.2,
+              opacity: 0.2, // Keeps it subtle so text is readable on top
               child: SizedBox(
                 height: 300,
                 width: 300,
@@ -170,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SafeArea(
               child: Column(
                 children: [
+                  // --- SEARCH BAR ---
                   if (_isSearching)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -193,6 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onChanged: (value) => setState(() => _searchQuery = value),
                       ),
                     ),
+
+                  // --- PASSWORD LIST ---
                   Expanded(
                     child: _isLoading
                         ? const Center(child: CircularProgressIndicator(color: Colors.tealAccent))
@@ -288,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             const UserProfile(), 
 
-          // === LAYER 3: The Floating Nav Bar ===
+          // === LAYER 3: Floating Navigation Bar ===
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(

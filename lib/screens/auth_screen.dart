@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
 import 'home_screen.dart'; 
 
+/// AuthScreen handles user login.
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -10,26 +12,40 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // Controllers read and manipulate the text entered by the user
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
+
   final StorageService _storageService = StorageService();
   
   final String _welcomeMessage = 'Hey, welcome back!';
-  String _authMessage = '';
-  bool _isError = false;
+  String _authMessage = ''; // Holds dynamic error message
+  bool _isError = false; // Acts as a switch to show/hide the error text
 
+  // === MEMORY MANAGEMENT ===
+  @override
+  void dispose() {
+    // Always dispose of controllers when the screen is destroyed to free up the device's RAM and prevent memory leaks.
+    _userController.dispose();
+    _passController.dispose();
+    super.dispose();
+  }
+
+  // === AUTHENTICATION LOGIC ===
   Future<void> _login() async {
     String enteredUser = _userController.text;
     String enteredPass = _passController.text;
     
+    // Basic Form Validation
     if (enteredUser.isEmpty || enteredPass.isEmpty) {
       setState(() {
         _isError = true;
         _authMessage = 'Please fill in both fields.';
       });
-      return;
+      return; // Stop execution here
     }
 
+    // Await the database check
     bool isSuccess = await _storageService.verifyLogin(enteredUser, enteredPass);
 
     if (isSuccess) {
@@ -52,7 +68,8 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      extendBodyBehindAppBar: true, 
+      extendBodyBehindAppBar: true,
+      // Transparent AppBar allows the user to tap the 'back' arrow without breaking the immersive dark mode design.
       appBar: AppBar(
         backgroundColor: Colors.transparent, 
         foregroundColor: Colors.white, 
@@ -61,6 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
       
       body: Stack(
         children: [
+          // Background Glow Effect
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -82,6 +100,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+
+                  // --- SHIELD GRAPHIC ---
                   SizedBox(
                     height: 160,
                     child: Stack(
@@ -118,6 +138,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   Text(_welcomeMessage, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: Colors.white70)),
                   const SizedBox(height: 40),
                   
+                  // --- FORM FIELDS ---
                   TextField(
                     controller: _userController,
                     style: const TextStyle(color: Colors.white),
@@ -151,6 +172,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   
                   const SizedBox(height: 30),
                   
+                  // --- LOGIN BUTTON ---
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(

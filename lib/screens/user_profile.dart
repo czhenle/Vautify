@@ -6,6 +6,7 @@ import '../services/encryption_service.dart';
 import '../models/password_entry.dart';
 import 'landing_screen.dart';
 
+/// User Profile displays the user's secure account info and provides actions like logging out and re-encrypting the vault.
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -16,6 +17,8 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> {
   final StorageService _storageService = StorageService();
   final EncryptionService _encryptionService = EncryptionService();
+
+  // ImagePicker allows us to access the device's native file system/camera
   final ImagePicker _picker = ImagePicker();
 
   String _username = 'Loading...';
@@ -25,9 +28,10 @@ class _UserProfileState extends State<UserProfile> {
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
+    _loadProfileData(); // Fetch the data as soon as the profile tab is opened
   }
 
+  // === DATA LOADING & MEDIA ===
   Future<void> _loadProfileData() async {
     Map<String, String?> account = await _storageService.getMasterAccount();
     final passwords = await _storageService.getPasswords();
@@ -41,15 +45,18 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<void> _pickImage() async {
+    // Opens the native iOS/Android photo gallery
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
         _imagePath = image.path;
       });
+      // Save the local file path to secure storage so it persists across app restarts
       await _storageService.saveProfileImagePath(image.path);
     }
   }
 
+  // === ADVANCED SECURITY: VAULT RE-ENCRYPTION ===
   void _showChangePasswordDialog() {
     final TextEditingController oldPassController = TextEditingController();
     final TextEditingController newPassController = TextEditingController();
@@ -122,6 +129,7 @@ class _UserProfileState extends State<UserProfile> {
                     onPressed: () async {
                       Map<String, String?> account = await _storageService.getMasterAccount();
                       
+                      // 1. Validation
                       if (oldPassController.text != account['password']) {
                         setDialogState(() { errorMessage = 'Current password is incorrect!'; });
                         return;
@@ -131,8 +139,10 @@ class _UserProfileState extends State<UserProfile> {
                         return;
                       }
 
+                      // 2. Trigger loading UI
                       setDialogState(() { isReEncrypting = true; errorMessage = ''; });
 
+                      // 3. Cryptographic Loop: Decrypt everything with old key, encrypt with new key
                       List<PasswordEntry> allEntries = await _storageService.getPasswords();
 
                       for (var entry in allEntries) {
@@ -156,6 +166,7 @@ class _UserProfileState extends State<UserProfile> {
                         await _storageService.updatePassword(updatedEntry);
                       }
 
+                      // 4. Finally, update the master key itself
                       await _storageService.updateMasterPassword(newPassController.text);
 
                       if (context.mounted) {
@@ -175,10 +186,12 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
+  // === SESSION MANAGEMENT ===
   Future<void> _logout() async {
     await _storageService.logout(); 
 
     if (mounted) {
+      // Return to landing screen and clear routing history so user can't hit "back"
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
         (Route<dynamic> route) => false,
@@ -216,6 +229,8 @@ class _UserProfileState extends State<UserProfile> {
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
               child: Column(
                 children: [
+
+                  // --- PROFILE PICTURE UI ---
                   Center(
                     child: Stack(
                       children: [
@@ -245,6 +260,7 @@ class _UserProfileState extends State<UserProfile> {
                   Text('$_passwordCount Entries Secured', style: const TextStyle(fontSize: 16, color: Colors.tealAccent, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 40),
 
+                  // --- MENU OPTIONS ---
                   _buildMenuCard(
                     icon: Icons.lock_reset,
                     title: 'Change Master Password',
@@ -278,6 +294,7 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
+  // A reusable helper widget to keep the layout code DRY (Don't Repeat Yourself)
   Widget _buildMenuCard({
     required IconData icon, required String title, required String subtitle, required VoidCallback onTap, Color iconColor = Colors.tealAccent,
   }) {
