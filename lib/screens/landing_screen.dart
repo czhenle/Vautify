@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 import 'registration_screen.dart';
 
+/// This screen acts as the welcome gateway for users.
+
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
@@ -9,13 +11,16 @@ class LandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+
       body: Stack(
         children: [
+          // === LAYER 1: AMBIENT BACKGROUND GLOW ===
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               height: 500,
               decoration: BoxDecoration(
+                // RadialGradient creates a soft, fading "spotlight" effect coming from the bottom of the screen.
                 gradient: RadialGradient(
                   center: const Alignment(0, 0.8),
                   radius: 0.8,
@@ -28,12 +33,17 @@ class LandingScreen extends StatelessWidget {
             ),
           ),
           
+          // === LAYER 2: FOREGROUND CONTENT ===
+          // SafeArea ensures our UI doesn't get covered by the phone's top notch, status bar, or bottom navigation gestures.
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+
+                  // --- TOP HEADER ---
                   const Row(
                     children: [
                       Icon(Icons.shield, color: Colors.tealAccent, size: 30),
@@ -45,14 +55,18 @@ class LandingScreen extends StatelessWidget {
                     ],
                   ),
                   
+                  // Spacer() automatically expands to fill empty vertical space. 
+                  // This dynamically centers our graphic no matter how tall the phone is.
                   const Spacer(),
                   
+                  // --- MIDDLE GRAPHIC ---
                   SizedBox(
                     height: 240,
                     child: Stack(
                       alignment: Alignment.center,
                       clipBehavior: Clip.none,
                       children: [
+                        // The Glowing Aura
                         Container(
                           width: 140,
                           height: 140,
@@ -68,12 +82,15 @@ class LandingScreen extends StatelessWidget {
                           ),
                         ),
 
+                        // The Main Shield Asset
                         Icon(
                           Icons.security, 
                           size: 180, 
                           color: Colors.grey[900]!.withValues(alpha:0.8)
                         ),
 
+                        // Floating AES-256 Badge
+                        // Positioned allows absolute placement inside the Stack
                         Positioned(
                           top: 20,
                           right: 40,
@@ -88,6 +105,7 @@ class LandingScreen extends StatelessWidget {
                           ),
                         ),
 
+                        // Overlapping "Encrypted Card" UI
                         Positioned(
                           bottom: 50,
                           child: Container(
@@ -116,9 +134,11 @@ class LandingScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
+                  // Another Spacer pushes the buttons down to the bottom of the screen
                   const Spacer(),
                   
+                  // --- BOTTOM TEXT & BUTTONS ---
                   const Text(
                     'Your Digital Life,\nSecured.',
                     style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold, height: 1.2),
@@ -130,6 +150,7 @@ class LandingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 50),
 
+                  // Login Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
@@ -144,6 +165,7 @@ class LandingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
 
+                  // Register Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const RegistrationScreen()));
