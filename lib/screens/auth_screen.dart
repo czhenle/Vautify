@@ -36,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     String enteredUser = _userController.text;
     String enteredPass = _passController.text;
     
-    // Basic Form Validation
+    // 1. Basic Form Validation
     if (enteredUser.isEmpty || enteredPass.isEmpty) {
       setState(() {
         _isError = true;
@@ -45,9 +45,10 @@ class _AuthScreenState extends State<AuthScreen> {
       return; // Stop execution here
     }
 
-    // Await the database check
+    // 2. Database Check: Verify credentials against secure storage
     bool isSuccess = await _storageService.verifyLogin(enteredUser, enteredPass);
 
+    // 3. Handle Success & Secure Navigation
     if (isSuccess) {
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
@@ -55,6 +56,7 @@ class _AuthScreenState extends State<AuthScreen> {
           (Route<dynamic> route) => false,
         );
       }
+    // 4. Handle Failure & UX reset
     } else {
       setState(() {
         _isError = true;

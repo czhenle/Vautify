@@ -340,7 +340,7 @@ class _PasswordFormScreenState extends State<PasswordFormScreen> {
                     ),
                     
                     const SizedBox(height: 35),
-                    const Text('Optional Features (Extra Security)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    const Text('Optional Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     const SizedBox(height: 15),
 
                     TextFormField(
